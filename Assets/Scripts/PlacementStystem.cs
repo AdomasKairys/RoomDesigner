@@ -45,8 +45,6 @@ public class PlacementStystem : MonoBehaviour
         InputManager.Instance.OnClick.AddListener(() => { PlaceObject(); });
         InputManager.Instance.OnExit.AddListener(() => { StopPlacement(); });
     }
-
-
     private void PlaceObject()
     {
         var tilePos = InputManager.Instance.GetSelectedGridTilePosition();
@@ -64,6 +62,7 @@ public class PlacementStystem : MonoBehaviour
         _buildingState.EndState();
         InputManager.Instance.OnClick.RemoveAllListeners();
         InputManager.Instance.OnExit.RemoveAllListeners();
+        InputManager.Instance.OnRotate.RemoveAllListeners();
         _buildingState = null;
     }
 

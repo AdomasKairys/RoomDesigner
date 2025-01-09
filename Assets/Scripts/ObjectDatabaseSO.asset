@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   objectsData:
   - <Name>k__BackingField: Big Cube
-    <Id>k__BackingField: 0
+    <Id>k__BackingField: 2
     <Size>k__BackingField: {x: 2, y: 1, z: 1}
     <ShapeOffsets>k__BackingField:
     - {x: 0, y: 0, z: 0}
@@ -23,5 +23,14 @@ MonoBehaviour:
   - <Name>k__BackingField: Small Cube
     <Id>k__BackingField: 1
     <Size>k__BackingField: {x: 1, y: 1, z: 1}
-    <ShapeOffsets>k__BackingField: []
+    <ShapeOffsets>k__BackingField:
+    - {x: 0, y: 0, z: 0}
     <Prefab>k__BackingField: {fileID: 8294556485075385952, guid: d00830b9bd7c2374e9ae0b79b3b144e7, type: 3}
+  - <Name>k__BackingField: Big Angled Cube
+    <Id>k__BackingField: 0
+    <Size>k__BackingField: {x: 2, y: 1, z: 2}
+    <ShapeOffsets>k__BackingField:
+    - {x: 1, y: 0, z: 0}
+    - {x: 1, y: 0, z: 1}
+    - {x: 0, y: 0, z: 1}
+    <Prefab>k__BackingField: {fileID: 4765376641886257171, guid: c7fbde735bc261a43872be8f7e12cd3a, type: 3}

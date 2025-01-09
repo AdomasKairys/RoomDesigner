@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,7 +34,10 @@ public class PlacementState : IBuildingState
             _objectDatabase.objectsData[_selectedObjectIndex].Prefab,
             _objectDatabase.objectsData[_selectedObjectIndex].Size);
 
+        InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
     }
+
+
     public void EndState()
     {
         _previewSystem.HidePlacementPreview();
@@ -45,24 +49,27 @@ public class PlacementState : IBuildingState
 
         if (!isPlacementValid) return;
 
-        var placedObjInfo = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab,
-                                                      _grid.CellToWorld(gridPos),
-                                                      surfaceDirection,
-                                                      _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets);
+        int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform());
 
         _furnitureData.AddObjectAt(gridPos,
-            placedObjInfo.FinalOffset,
+            _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
             _previewSystem.GetAnchor(),
             _objectDatabase.objectsData[_selectedObjectIndex].Id,
-            placedObjInfo.Index);
+            index);
     }
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {
         bool isPlacementValid = IsPlacementValid(gridPos);
         _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets = _previewSystem.UpdatePreviewPositions(_grid.CellToWorld(gridPos),
                                                                                                                       surfaceDirection,
-                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets);
+                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets) ??
+                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets;
         _previewSystem.UpdatePreviewColor(isPlacementValid);
+        _previewSystem.UpdateIndicatorColor(isPlacementValid);
+    }
+    private void RotateObject()
+    {
+       _previewSystem.RotatePreview();
     }
     private bool IsPlacementValid(Vector3Int gridPos)
     {

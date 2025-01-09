@@ -21,7 +21,17 @@ public class GridData
             placedObjects[pos] = data;
         }
     }
+    public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor)
+    {
+        List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets, anchor);
 
+        return !posToOccupy.Any(pos => placedObjects.ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
+    }
+    public Vector3Int GridPositionRealativeToAnchor(Vector3Int gridPos, Vector3 anchor, float gridCellSize = 1f)
+    {
+        var newGridPos = gridPos + anchor * (gridCellSize / 2);
+        return Vector3Int.FloorToInt(newGridPos);
+    }
     private List<Vector3Int> CalculatePositions(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor) //generalize for walls and rotation
     {
         List<Vector3Int> returnVal = new();
@@ -32,17 +42,18 @@ public class GridData
         }
         return returnVal;
     }
-
-    public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor)
+    private bool IsOutOfBounds(List<Vector3Int> posToOccupy)
     {
-        List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets, anchor);
+        // max bounds have to be one less than the actual bounds becouse of the way the grid position works
+        // needs to be changed if the grid scale changes
+        int[] xBounds = { -5, 4 };
+        int[] yBounds = { 0, 4 };
+        int[] zBounds = { -10, -1 };
 
-        return !posToOccupy.Any(pos => placedObjects.ContainsKey(pos));
-    }
-    public Vector3Int GridPositionRealativeToAnchor(Vector3Int gridPos, Vector3 anchor, float gridCellSize = 1f)
-    {
-        var newGridPos = gridPos + anchor * (gridCellSize / 2);
-        return Vector3Int.FloorToInt(newGridPos);
+        return posToOccupy.Any((pos) =>
+                                (pos.x - xBounds[0]) * (xBounds[1] - pos.x) < 0 ||
+                                (pos.y - yBounds[0]) * (yBounds[1] - pos.y) < 0 ||
+                                (pos.z - zBounds[0]) * (zBounds[1] - pos.z) < 0);
     }
 }
 public class PlacementData

@@ -8,7 +8,7 @@ public class InputManager : MonoBehaviour
 
     private (Vector3 Position, Vector3 SurfaceNormal) _lastPosition;
 
-    public UnityEvent OnClick, OnExit;
+    public UnityEvent OnClick, OnExit, OnRotate;
 
     public static InputManager Instance { get; private set; }
     private void Awake()
@@ -24,7 +24,10 @@ public class InputManager : MonoBehaviour
             OnClick?.Invoke();
         if (Input.GetKeyDown(KeyCode.Escape))
             OnExit?.Invoke();
+        if(Input.GetMouseButtonDown(1))
+            OnRotate?.Invoke();
     }
+
     public (Vector3 Position, Vector3 SurfaceNormal) GetSelectedGridTilePosition()
     {
         Vector3 mousePos = Input.mousePosition;

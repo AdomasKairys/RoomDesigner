@@ -1463,7 +1463,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be734814dc179e2418763bd3f30fa44b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  previewYOffset: 0.06
   cellIndicator: {fileID: 1976556827}
   previewMaterialAsset: {fileID: 2100000, guid: e51cb88fadfb7614fab537c5763972fa, type: 2}
 --- !u!4 &1041288710
@@ -1739,6 +1738,9 @@ MonoBehaviour:
   OnExit:
     m_PersistentCalls:
       m_Calls: []
+  OnRotate:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &1552850580
 Transform:
   m_ObjectHideFlags: 0
@@ -1762,6 +1764,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 216488229}
     m_Modifications:
+    - target: {fileID: 1982318267568696865, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1982318267568696865, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1982318267568696865, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1982318267568696865, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1808,6 +1822,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2224351552042321781, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
       propertyPath: m_DynamicOccludee
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2372260237692397091, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
+      propertyPath: m_LocalScale.x
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2372260237692397091, guid: 9bd1ea255c73f454db4154f29770a971, type: 3}
