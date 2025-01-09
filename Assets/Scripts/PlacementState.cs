@@ -53,13 +53,14 @@ public class PlacementState : IBuildingState
 
         _furnitureData.AddObjectAt(gridPos,
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-            _previewSystem.GetAnchor(),
+            _previewSystem.GetDirectionToCellCenter(),
             _objectDatabase.objectsData[_selectedObjectIndex].Id,
             index);
     }
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {
         bool isPlacementValid = IsPlacementValid(gridPos);
+        _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
         _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets = _previewSystem.UpdatePreviewPositions(_grid.CellToWorld(gridPos),
                                                                                                                       surfaceDirection,
                                                                                                                       _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets) ??
@@ -76,6 +77,6 @@ public class PlacementState : IBuildingState
         GridData selectedData = _furnitureData; //change for object on object
         return selectedData.CanPlaceObjectAt(gridPos,
                                              _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-                                             _previewSystem.GetAnchor());
+                                             _previewSystem.GetDirectionToCellCenter());
     }
 }

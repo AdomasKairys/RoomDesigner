@@ -5,6 +5,8 @@ public class InputManager : MonoBehaviour
 {
     [SerializeField] Camera mainCamera;
     [SerializeField] LayerMask surfaceLayerMask;
+    [SerializeField] LayerMask furnitureLayerMask;
+
 
     private (Vector3 Position, Vector3 SurfaceNormal) _lastPosition;
 
@@ -27,7 +29,18 @@ public class InputManager : MonoBehaviour
         if(Input.GetMouseButtonDown(1))
             OnRotate?.Invoke();
     }
+    public Vector3? GetSelectedFurnitureObjectPosition()
+    {
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = mainCamera.nearClipPlane;
+        Ray ray = mainCamera.ScreenPointToRay(mousePos);
+        RaycastHit hit;
+        Vector3? furniture = null;
+        if (Physics.Raycast(ray, out hit, 100, furnitureLayerMask))
+            furniture = hit.transform.parent.position;
 
+        return furniture;
+    }
     public (Vector3 Position, Vector3 SurfaceNormal) GetSelectedGridTilePosition()
     {
         Vector3 mousePos = Input.mousePosition;

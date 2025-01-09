@@ -26,16 +26,31 @@ public class DeleteState : IBuildingState
 
     public void EndState()
     {
-        throw new System.NotImplementedException();
+        _previewSystem.HidePlacementPreview();
     }
 
-    public void OnAction(Vector3Int gridPos, Vector3 forward)
+    public void OnAction(Vector3Int gridPos, Vector3 surfaceNormal)
     {
-        throw new System.NotImplementedException();
-    }
+        if (!IsPlacementValid())
+            return;
 
-    public void UpdateState(Vector3Int gridPos, Vector3 forward)
+        Debug.Log("surface " + surfaceNormal);
+        // Scale the forward by -1 to get the direction of the cell behind
+        _selectedObjectIndex = _furnitureData.GetIndex(gridPos, _previewSystem.GetDirectionToCellCenter() - 2 * surfaceNormal);
+         
+        if(_selectedObjectIndex == -1)
+            return;
+        _furnitureData.RemoveObjectAt(gridPos, _previewSystem.GetDirectionToCellCenter() - 2 * surfaceNormal);
+        _objectPlacer.RemoveObjectAt(_selectedObjectIndex);
+
+    }
+    public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {
-        throw new System.NotImplementedException();
+        _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
+        _previewSystem.UpdateIndicatorColor(IsPlacementValid());
+    }
+    private bool IsPlacementValid()
+    {
+        return InputManager.Instance.GetSelectedFurnitureObjectPosition() != null;
     }
 }

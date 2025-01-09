@@ -23,11 +23,11 @@ public class PlacementStystem : MonoBehaviour
     {
         if (_buildingState == null) return;
 
-        var tilePos = InputManager.Instance.GetSelectedGridTilePosition();
-        Vector3 mousePos = tilePos.Position;
+        var (Position, SurfaceNormal) = InputManager.Instance.GetSelectedGridTilePosition();
+        Vector3 mousePos = Position;
         Vector3Int gridPos = grid.WorldToCell(mousePos);
 
-        _buildingState.UpdateState(gridPos, tilePos.SurfaceNormal);
+        _buildingState.UpdateState(gridPos, SurfaceNormal);
     }
 
     public void StartPlacement(int Id)
@@ -45,12 +45,27 @@ public class PlacementStystem : MonoBehaviour
         InputManager.Instance.OnClick.AddListener(() => { PlaceObject(); });
         InputManager.Instance.OnExit.AddListener(() => { StopPlacement(); });
     }
+
+    public void StartDelete()
+    {
+        StopPlacement();
+
+        _buildingState = new DeleteState(grid,
+                                         previewSystem,
+                                         objectDatabase,
+                                         furnitureData,
+                                         objectPlacer);
+
+        grids.ForEach(x => x.SetActive(true));
+        InputManager.Instance.OnClick.AddListener(() => { PlaceObject(); });
+        InputManager.Instance.OnExit.AddListener(() => { StopPlacement(); });
+    }
     private void PlaceObject()
     {
-        var tilePos = InputManager.Instance.GetSelectedGridTilePosition();
-        Vector3 mousePos = tilePos.Position;
+        var (Position, SurfaceNormal) = InputManager.Instance.GetSelectedGridTilePosition();
+        Vector3 mousePos = Position;
         Vector3Int gridPos = grid.WorldToCell(mousePos);
-        _buildingState.OnAction(gridPos, tilePos.SurfaceNormal);
+        _buildingState.OnAction(gridPos, SurfaceNormal);
     }
 
     private void StopPlacement()

@@ -25,6 +25,7 @@ public class PreviewSystem : MonoBehaviour
     }
     public void ShowDeletePreview()
     {
+        cellIndicator.SetActive(true);
         ScaleCursor(Vector3Int.one);
         UpdateIndicatorColor(false);
     }
@@ -34,11 +35,14 @@ public class PreviewSystem : MonoBehaviour
         if (_previewObject != null)
             Destroy(_previewObject);
     }
-    public List<Vector3Int> UpdatePreviewPositions(Vector3 pos, Vector3 surfaceDirection, List<Vector3Int> shapeOffsets)
+    public void UpdateIndicatorPosition(Vector3 pos, Vector3 surfaceDirection)
     {
         cellIndicator.transform.position = pos;
         cellIndicator.transform.LookAt(cellIndicator.transform.position - surfaceDirection);
-
+        cellIndicator.transform.RotateAround(cellIndicator.transform.position, cellIndicator.transform.forward, _rotationDegrees);
+    }
+    public List<Vector3Int> UpdatePreviewPositions(Vector3 pos, Vector3 surfaceDirection, List<Vector3Int> shapeOffsets)
+    {
         _previewObject.transform.position = pos;
 
         if (_previewObject.transform.up != surfaceDirection)
@@ -49,7 +53,6 @@ public class PreviewSystem : MonoBehaviour
                 _previewObject.transform.RotateAround(_previewObject.transform.position, _previewObject.transform.up, 180);
         }
         _previewObject.transform.RotateAround(_previewObject.transform.position, _previewObject.transform.up, _rotationDegrees);
-        cellIndicator.transform.RotateAround(cellIndicator.transform.position, cellIndicator.transform.forward, _rotationDegrees);
         _rotationDegrees = 0;
         // move this to different script file
         List<Vector3Int> rotatedOffsets = new();
@@ -57,7 +60,6 @@ public class PreviewSystem : MonoBehaviour
         {
             var rotatedOffset = _previewObject.transform.rotation * shapeOffsets[i];
             rotatedOffsets.Add(Vector3Int.RoundToInt(rotatedOffset));
-            Debug.Log(rotatedOffset);
         }
         return rotatedOffsets;
     }
@@ -69,7 +71,7 @@ public class PreviewSystem : MonoBehaviour
     { 
         return _previewObject.transform; 
     }
-    public Vector3 GetAnchor()
+    public Vector3 GetDirectionToCellCenter()
     {
         return cellIndicator.transform.right - cellIndicator.transform.forward + cellIndicator.transform.up;
     }

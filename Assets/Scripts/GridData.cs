@@ -1,10 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class GridData
 {
-    Dictionary<Vector3Int, PlacementData> placedObjects = new();
+    Dictionary<Vector3Int, PlacementData> _placedObjects = new();
 
     public void AddObjectAt(Vector3Int gridPos,
                             List<Vector3Int> shapeOffsets,
@@ -16,29 +17,51 @@ public class GridData
         PlacementData data = new PlacementData(occupiedPos, Id, placedObjectIndex);
         foreach (var pos in occupiedPos)
         {
-            if (placedObjects.ContainsKey(pos))
+            if (_placedObjects.ContainsKey(pos))
                 return; //throw
-            placedObjects[pos] = data;
+            _placedObjects[pos] = data;
         }
     }
     public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor)
     {
         List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets, anchor);
 
-        return !posToOccupy.Any(pos => placedObjects.ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
+        return !posToOccupy.Any(pos => _placedObjects.ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
     }
     public Vector3Int GridPositionRealativeToAnchor(Vector3Int gridPos, Vector3 anchor, float gridCellSize = 1f)
     {
         var newGridPos = gridPos + anchor * (gridCellSize / 2);
         return Vector3Int.FloorToInt(newGridPos);
     }
+
+    public int GetIndex(Vector3Int gridPos, Vector3 anchor)
+    {
+        var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
+        Debug.Log("anchor " + anchor);
+        Debug.Log(adjustedGridPos);
+        foreach (var pos in _placedObjects)
+            Debug.Log(pos);
+
+        if (!_placedObjects.ContainsKey(adjustedGridPos))
+            return -1;
+        return _placedObjects[adjustedGridPos].PlacedObjectIndex;
+    }
+    public void RemoveObjectAt(Vector3Int gridPos, Vector3 anchor)
+    {
+        var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
+        foreach (var pos in _placedObjects[adjustedGridPos].occupiedPositions)
+        {
+            _placedObjects.Remove(pos);
+        }
+    }
+
     private List<Vector3Int> CalculatePositions(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor) //generalize for walls and rotation
     {
         List<Vector3Int> returnVal = new();
         foreach (var offset in shapeOffsets)
         {
-            var adjsutedGridPos = GridPositionRealativeToAnchor(gridPos + offset, anchor);
-            returnVal.Add(adjsutedGridPos);
+            var adjustedGridPos = GridPositionRealativeToAnchor(gridPos + offset, anchor);
+            returnVal.Add(adjustedGridPos);
         }
         return returnVal;
     }
@@ -55,6 +78,7 @@ public class GridData
                                 (pos.y - yBounds[0]) * (yBounds[1] - pos.y) < 0 ||
                                 (pos.z - zBounds[0]) * (zBounds[1] - pos.z) < 0);
     }
+    
 }
 public class PlacementData
 {
