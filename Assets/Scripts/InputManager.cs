@@ -7,18 +7,21 @@ public class InputManager : MonoBehaviour
     [SerializeField] LayerMask surfaceLayerMask;
     [SerializeField] LayerMask furnitureLayerMask;
 
-
     private (Vector3 Position, Vector3 SurfaceNormal) _lastPosition;
+
+    public static InputManager Instance { get; private set; }
 
     public UnityEvent OnClick, OnExit, OnRotate;
 
-    public static InputManager Instance { get; private set; }
     private void Awake()
     {
         if (Instance != null && Instance != this)
             Destroy(this.gameObject);
         else
             Instance = this;
+
+        _lastPosition.Position = new Vector3(0,0,-5);
+        _lastPosition.SurfaceNormal = new Vector3(0, 1, 0);
     }
     private void Update()
     {

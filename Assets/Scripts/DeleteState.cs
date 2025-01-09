@@ -51,6 +51,6 @@ public class DeleteState : IBuildingState
     }
     private bool IsPlacementValid()
     {
-        return InputManager.Instance.GetSelectedFurnitureObjectPosition() != null;
+        return InputManager.Instance.GetSelectedFurnitureObjectPosition() != null; //replace with bool
     }
 }

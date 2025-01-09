@@ -24,6 +24,7 @@ public class PlacementStystem : MonoBehaviour
         if (_buildingState == null) return;
 
         var (Position, SurfaceNormal) = InputManager.Instance.GetSelectedGridTilePosition();
+
         Vector3 mousePos = Position;
         Vector3Int gridPos = grid.WorldToCell(mousePos);
 

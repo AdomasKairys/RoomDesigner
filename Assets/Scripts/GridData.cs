@@ -92,5 +92,4 @@ public class PlacementData
         Id = id;
         PlacedObjectIndex = placedObjectIndex;
     }
-
 }
