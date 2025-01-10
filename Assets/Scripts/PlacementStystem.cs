@@ -14,7 +14,6 @@ public class PlacementStystem : MonoBehaviour
 
     private IBuildingState _buildingState;
 
-    private Color _furnitureColor;
     private void Start()
     {
         StopPlacement();
@@ -31,7 +30,11 @@ public class PlacementStystem : MonoBehaviour
 
         _buildingState.UpdateState(gridPos, SurfaceNormal);
     }
-    public void ChangeMaterialColor(Color color) => _furnitureColor = color;
+    public void ChangeMaterialColor(Color color)
+    {
+        if(_buildingState is PlacementState)
+            (_buildingState as PlacementState).OnColorChanged?.Invoke(color);
+    }
     public GridData GetFurnitureData() => _furnitureData;
     public void LoadFurnitureData(SaveData data, ObjectDatabaseSO database) => _furnitureData = data.serializableGridData.ToGridData();
     public void StartPlacement(int Id)
@@ -43,13 +46,14 @@ public class PlacementStystem : MonoBehaviour
                                             previewSystem,
                                             objectDatabase,
                                             _furnitureData,
-                                            objectPlacer,
-                                            _furnitureColor);
+                                            objectPlacer);
+
 
         grids.ForEach(x => x.SetActive(true));
         InputManager.Instance.OnClick.AddListener(() => { PlaceObject(); });
         InputManager.Instance.OnExit.AddListener(() => { StopPlacement(); });
     }
+
 
     public void StartDelete()
     {

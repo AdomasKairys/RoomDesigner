@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour
 {
@@ -25,13 +26,14 @@ public class InputManager : MonoBehaviour
     }
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-            OnClick?.Invoke();
         if (Input.GetKeyDown(KeyCode.Escape))
             OnExit?.Invoke();
+        if (Input.GetMouseButtonDown(0))
+            OnClick?.Invoke();
         if(Input.GetMouseButtonDown(1))
             OnRotate?.Invoke();
     }
+    public bool IsPointerOverUI() => EventSystem.current.IsPointerOverGameObject();
     public Vector3? GetSelectedFurnitureObjectPosition()
     {
         Vector3 mousePos = Input.mousePosition;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlacementState : IBuildingState
 {
@@ -12,13 +13,15 @@ public class PlacementState : IBuildingState
     private GridData _furnitureData;
     private ObjectPlacer _objectPlacer;
     private Color _furnitureColor;
+
+    public UnityEvent<Color> OnColorChanged = new UnityEvent<Color>();
+
     public PlacementState(int id,
                           Grid grid,
                           PreviewSystem previewSystem,
                           ObjectDatabaseSO objectDatabase,
                           GridData furnitureData,
-                          ObjectPlacer objectPlacer,
-                          Color furnitureColor)
+                          ObjectPlacer objectPlacer)
     {
         _id = id;
         _grid = grid;
@@ -26,7 +29,6 @@ public class PlacementState : IBuildingState
         _objectDatabase = objectDatabase;
         _furnitureData = furnitureData;
         _objectPlacer = objectPlacer;
-        _furnitureColor = furnitureColor;
 
         _selectedObjectIndex = _objectDatabase.objectsData.FindIndex(x => x.Id == _id);
         if (_selectedObjectIndex < 0)
@@ -37,6 +39,7 @@ public class PlacementState : IBuildingState
             _objectDatabase.objectsData[_selectedObjectIndex].Size);
 
         InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
+        OnColorChanged.AddListener((color)  => _furnitureColor = color);
     }
 
 
@@ -47,9 +50,10 @@ public class PlacementState : IBuildingState
 
     public void OnAction(Vector3Int gridPos, Vector3 surfaceDirection)
     {
-        bool isPlacementValid = IsPlacementValid(gridPos);
+        bool isPlacementValid = IsPlacementValid(gridPos, surfaceDirection);
+        bool isPointerOverUI = InputManager.Instance.IsPointerOverUI();
+        if (!isPlacementValid || isPointerOverUI) return;
 
-        if (!isPlacementValid) return;
 
         int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform(), _furnitureColor,_id);
 
@@ -61,7 +65,7 @@ public class PlacementState : IBuildingState
     }
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {
-        bool isPlacementValid = IsPlacementValid(gridPos);
+        bool isPlacementValid = IsPlacementValid(gridPos, surfaceDirection);
         _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
         _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets = _previewSystem.UpdatePreviewPositions(_grid.CellToWorld(gridPos),
                                                                                                                       surfaceDirection,
@@ -74,8 +78,16 @@ public class PlacementState : IBuildingState
     {
        _previewSystem.RotatePreview();
     }
-    private bool IsPlacementValid(Vector3Int gridPos)
+    private bool IsPlacementValid(Vector3Int gridPos, Vector3 surfaceDirection)
     {
+
+        var surfaceNormals = _objectDatabase.objectsData[_selectedObjectIndex].PlacableSurfaceNormals;
+
+        if ((surfaceNormals.x < 1 || surfaceDirection.x < 1) &&
+            (surfaceNormals.y < 1 || surfaceDirection.y < 1) &&
+            (surfaceNormals.z < 1 || surfaceDirection.z < 1))
+            return false;
+
         GridData selectedData = _furnitureData; //change for object on object
         return selectedData.CanPlaceObjectAt(gridPos,
                                              _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,

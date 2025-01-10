@@ -15,7 +15,8 @@ public class ObjectData
     public List<Vector3Int> ShapeOffsets { get; private set; }
     [field: SerializeField]
     public GameObject Prefab { get; private set; }
-
+    [field: SerializeField]
+    public Vector3Int PlacableSurfaceNormals { get; private set; }
     public List<Vector3Int> CurrentShapeOffsets { get; set; } = null;
 }
 

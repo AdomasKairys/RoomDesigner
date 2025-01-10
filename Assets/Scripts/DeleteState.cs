@@ -31,8 +31,8 @@ public class DeleteState : IBuildingState
 
     public void OnAction(Vector3Int gridPos, Vector3 surfaceNormal)
     {
-        if (!IsPlacementValid())
-            return;
+        bool isPointerOverUI = InputManager.Instance.IsPointerOverUI();
+        if (!IsPlacementValid() || isPointerOverUI) return;
 
         Debug.Log("surface " + surfaceNormal);
         // Scale the forward by -1 to get the direction of the cell behind
