@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class GridData
 {
-    Dictionary<Vector3Int, PlacementData> _placedObjects = new();
-
+    public Dictionary<Vector3Int, PlacementData> placedObjects = new();
     public void AddObjectAt(Vector3Int gridPos,
                             List<Vector3Int> shapeOffsets,
                             Vector3 anchor,
@@ -17,16 +16,16 @@ public class GridData
         PlacementData data = new PlacementData(occupiedPos, Id, placedObjectIndex);
         foreach (var pos in occupiedPos)
         {
-            if (_placedObjects.ContainsKey(pos))
+            if (placedObjects.ContainsKey(pos))
                 return; //throw
-            _placedObjects[pos] = data;
+            placedObjects[pos] = data;
         }
     }
     public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor)
     {
         List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets, anchor);
 
-        return !posToOccupy.Any(pos => _placedObjects.ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
+        return !posToOccupy.Any(pos => placedObjects.ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
     }
     public Vector3Int GridPositionRealativeToAnchor(Vector3Int gridPos, Vector3 anchor, float gridCellSize = 1f)
     {
@@ -39,19 +38,19 @@ public class GridData
         var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
         Debug.Log("anchor " + anchor);
         Debug.Log(adjustedGridPos);
-        foreach (var pos in _placedObjects)
+        foreach (var pos in placedObjects)
             Debug.Log(pos);
 
-        if (!_placedObjects.ContainsKey(adjustedGridPos))
+        if (!placedObjects.ContainsKey(adjustedGridPos))
             return -1;
-        return _placedObjects[adjustedGridPos].PlacedObjectIndex;
+        return placedObjects[adjustedGridPos].placedObjectIndex;
     }
     public void RemoveObjectAt(Vector3Int gridPos, Vector3 anchor)
     {
         var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
-        foreach (var pos in _placedObjects[adjustedGridPos].occupiedPositions)
+        foreach (var pos in placedObjects[adjustedGridPos].occupiedPositions)
         {
-            _placedObjects.Remove(pos);
+            placedObjects.Remove(pos);
         }
     }
 
@@ -80,16 +79,16 @@ public class GridData
     }
     
 }
+[System.Serializable]
 public class PlacementData
 {
     public List<Vector3Int> occupiedPositions;
-    public int Id { get; private set; }
-    public int PlacedObjectIndex { get; private set; }
-
-    public PlacementData(List<Vector3Int> occupidePositions, int id, int placedObjectIndex)
+    public int id;
+    public int placedObjectIndex;
+    public PlacementData(List<Vector3Int> occupiedPositions, int id, int placedObjectIndex)
     {
-        this.occupiedPositions = occupidePositions;
-        Id = id;
-        PlacedObjectIndex = placedObjectIndex;
+        this.occupiedPositions = occupiedPositions;
+        this.id = id;
+        this.placedObjectIndex = placedObjectIndex;
     }
 }

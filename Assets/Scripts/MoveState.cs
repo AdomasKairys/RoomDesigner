@@ -52,13 +52,13 @@ public class MoveState : IBuildingState
 
 
 
-        int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform());
+        //int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform(), _id);
 
-        _furnitureData.AddObjectAt(gridPos,
-            _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-            _previewSystem.GetDirectionToCellCenter(),
-            _objectDatabase.objectsData[_selectedObjectIndex].Id,
-            index);
+        //_furnitureData.AddObjectAt(gridPos,
+        //    _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
+        //    _previewSystem.GetDirectionToCellCenter(),
+        //    _objectDatabase.objectsData[_selectedObjectIndex].Id,
+        //    index);
     }
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {

@@ -10,14 +10,15 @@ public class PlacementStystem : MonoBehaviour
     [SerializeField] PreviewSystem previewSystem;
     [SerializeField] ObjectPlacer objectPlacer;
 
-    private GridData furnitureData;
+    private GridData _furnitureData;
 
     private IBuildingState _buildingState;
 
+    private Color _furnitureColor;
     private void Start()
     {
         StopPlacement();
-        furnitureData = new();
+        _furnitureData = new();
     }
     private void Update()
     {
@@ -30,7 +31,9 @@ public class PlacementStystem : MonoBehaviour
 
         _buildingState.UpdateState(gridPos, SurfaceNormal);
     }
-
+    public void ChangeMaterialColor(Color color) => _furnitureColor = color;
+    public GridData GetFurnitureData() => _furnitureData;
+    public void LoadFurnitureData(SaveData data, ObjectDatabaseSO database) => _furnitureData = data.serializableGridData.ToGridData();
     public void StartPlacement(int Id)
     {
         StopPlacement();
@@ -39,8 +42,9 @@ public class PlacementStystem : MonoBehaviour
                                             grid,
                                             previewSystem,
                                             objectDatabase,
-                                            furnitureData,
-                                            objectPlacer);
+                                            _furnitureData,
+                                            objectPlacer,
+                                            _furnitureColor);
 
         grids.ForEach(x => x.SetActive(true));
         InputManager.Instance.OnClick.AddListener(() => { PlaceObject(); });
@@ -54,7 +58,7 @@ public class PlacementStystem : MonoBehaviour
         _buildingState = new DeleteState(grid,
                                          previewSystem,
                                          objectDatabase,
-                                         furnitureData,
+                                         _furnitureData,
                                          objectPlacer);
 
         grids.ForEach(x => x.SetActive(true));

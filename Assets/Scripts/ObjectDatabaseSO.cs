@@ -17,9 +17,6 @@ public class ObjectData
     public GameObject Prefab { get; private set; }
 
     public List<Vector3Int> CurrentShapeOffsets { get; set; } = null;
-
-
-
 }
 
 [CreateAssetMenu(fileName = "ObjectDatabaseSO", menuName = "Scriptable Objects/ObjectDatabaseSO")]

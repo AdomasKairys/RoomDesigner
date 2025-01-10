@@ -11,13 +11,14 @@ public class PlacementState : IBuildingState
     private ObjectDatabaseSO _objectDatabase;
     private GridData _furnitureData;
     private ObjectPlacer _objectPlacer;
-
+    private Color _furnitureColor;
     public PlacementState(int id,
                           Grid grid,
                           PreviewSystem previewSystem,
                           ObjectDatabaseSO objectDatabase,
                           GridData furnitureData,
-                          ObjectPlacer objectPlacer)
+                          ObjectPlacer objectPlacer,
+                          Color furnitureColor)
     {
         _id = id;
         _grid = grid;
@@ -25,6 +26,7 @@ public class PlacementState : IBuildingState
         _objectDatabase = objectDatabase;
         _furnitureData = furnitureData;
         _objectPlacer = objectPlacer;
+        _furnitureColor = furnitureColor;
 
         _selectedObjectIndex = _objectDatabase.objectsData.FindIndex(x => x.Id == _id);
         if (_selectedObjectIndex < 0)
@@ -49,7 +51,7 @@ public class PlacementState : IBuildingState
 
         if (!isPlacementValid) return;
 
-        int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform());
+        int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform(), _furnitureColor,_id);
 
         _furnitureData.AddObjectAt(gridPos,
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
