@@ -33,7 +33,7 @@ public class DeleteState : IBuildingState
     public void OnAction(Vector3Int gridPos, Vector3 surfaceDirection)
     {
         bool isPointerOverUI = InputManager.Instance.IsPointerOverUI();
-        if (!IsPlacementValid() || isPointerOverUI) return;
+        if (!IsCursorOnObject() || isPointerOverUI) return;
 
         Debug.Log("surface " + surfaceDirection);
         // Scale the forward by -1 to get the direction of the cell behind
@@ -48,13 +48,13 @@ public class DeleteState : IBuildingState
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
     {
         _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
-        _previewSystem.UpdateIndicatorColor(IsPlacementValid());
+        _previewSystem.UpdateIndicatorColor(IsCursorOnObject());
 
         _placedObjectIndex = _furnitureData.GetIndex(gridPos, _previewSystem.GetDirectionToCellCenter() - 2 * surfaceDirection);
         _previewSystem.OutlineObject(_placedObjectIndex == -1 ? null : _objectManager.GetGameObjectByIndex(_placedObjectIndex));
     }
-    private bool IsPlacementValid()
+    private bool IsCursorOnObject()
     {
-        return InputManager.Instance.IsPointingAtActiveFurnitureObject(); //replace with bool
+        return InputManager.Instance.IsPointerOnActiveFurnitureObject();
     }
 }

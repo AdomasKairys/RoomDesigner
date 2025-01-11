@@ -72,7 +72,7 @@ public class PlacementStystem : MonoBehaviour
                                             _furnitureData,
                                             objectManager,
                                             _furnitureColor);
-
+        InputManager.Instance.useOverride = true;
         grids.ForEach(x => x.SetActive(true));
         InputManager.Instance.OnClick.AddListener(() => { ExecuteState(); });
         InputManager.Instance.OnExit.AddListener(() => { EndState(); });
@@ -88,7 +88,7 @@ public class PlacementStystem : MonoBehaviour
                                             _furnitureData,
                                             objectManager);
 
-
+        InputManager.Instance.useOverride = true;
         grids.ForEach(x => x.SetActive(true));
         InputManager.Instance.OnClick.AddListener(() => { ExecuteState(); });
         InputManager.Instance.OnExit.AddListener(() => { EndState(); });
@@ -104,13 +104,14 @@ public class PlacementStystem : MonoBehaviour
                                          objectDatabase,
                                          _furnitureData,
                                          objectManager);
-
+        InputManager.Instance.useOverride = true;
         grids.ForEach(x => x.SetActive(true));
         InputManager.Instance.OnClick.AddListener(() => { ExecuteState(); });
         InputManager.Instance.OnExit.AddListener(() => { EndState(); });
     }
     public void EndState()
     {
+        InputManager.Instance.useOverride = false;
         grids.ForEach(x => x.SetActive(false));
         endStateButton.SetActive(false);
 

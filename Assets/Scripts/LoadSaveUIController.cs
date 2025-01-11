@@ -8,6 +8,12 @@ public class LoadSaveUIController : MonoBehaviour
     [SerializeField] Transform scrollViewContentListTransform;
     [SerializeField] GameObject saveDataItemPrefab;
 
+    [SerializeField] GameObject loadConfirmationPanel;
+    [SerializeField] Button loadConfirmationButton;
+
+    [SerializeField] GameObject deleteConfirmationPanel;
+    [SerializeField] Button deleteConfirmationButton;
+
     private Texture2D _thumbnailTexture;
     private List<GameObject> _saveItems = new();
     private void OnEnable()
@@ -50,15 +56,22 @@ public class LoadSaveUIController : MonoBehaviour
             });
             itemController.OnHoveredExit.AddListener(() => thumbnailImage.gameObject.SetActive(false));
             itemController.loadButton.onClick.AddListener(() => {
-                SaveManager.Instance.LoadFurniture(file);
-                gameObject.SetActive(false);
+                loadConfirmationPanel.SetActive(true);
+                loadConfirmationButton.onClick.RemoveAllListeners();
+                loadConfirmationButton.onClick.AddListener(() => { 
+                    SaveManager.Instance.LoadFurniture(file); });
             });
             itemController.deleteButton.onClick.AddListener(() => 
             {
-                thumbnailImage.gameObject.SetActive(false);
-                SaveManager.Instance.DeleteSaveFile(file);
-                Destroy(saveFileItem);
-                _saveItems.Remove(saveFileItem);
+                deleteConfirmationPanel.SetActive(true);
+                deleteConfirmationButton.onClick.RemoveAllListeners();
+                deleteConfirmationButton.onClick.AddListener(() =>
+                {
+                    thumbnailImage.gameObject.SetActive(false);
+                    SaveManager.Instance.DeleteSaveFile(file);
+                    Destroy(saveFileItem);
+                    _saveItems.Remove(saveFileItem);
+                });
             });
 
         }

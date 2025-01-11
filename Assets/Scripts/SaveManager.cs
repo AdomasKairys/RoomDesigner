@@ -60,7 +60,7 @@ public class SaveManager : MonoBehaviour
 
     public UnityEvent<SaveData, ObjectDatabaseSO> OnLoad;
 
-
+    private string _saveFileName="Save";
     
     private void Awake()
     {
@@ -72,6 +72,7 @@ public class SaveManager : MonoBehaviour
         thumbnailFolder = Application.persistentDataPath + "/thumbnail";
         Directory.CreateDirectory(thumbnailFolder);
     }
+    public void SetSaveFileName(string saveFileName) => _saveFileName = saveFileName;
     public void SaveFurniture()
     {
         SaveData saveData = new();
@@ -87,7 +88,7 @@ public class SaveManager : MonoBehaviour
         saveData.placedObjectsData = pod;
 
 
-        string path = Application.persistentDataPath + $"/Save_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.json";
+        string path = Application.persistentDataPath + $"/{_saveFileName}_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.json";
 
         string data = JsonUtility.ToJson(saveData);
         File.WriteAllText(path, data);

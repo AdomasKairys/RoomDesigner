@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
+    public bool useOverride = false;
     [SerializeField] Camera mainCamera;
     [SerializeField] LayerMask surfaceLayerMask;
     [SerializeField] LayerMask furnitureLayerMask;
@@ -17,6 +18,8 @@ public class InputManager : MonoBehaviour
 
     private (Vector3 Position, Vector3 SurfaceNormal) _lastPosition;
     private LayerMask _collisionLayerMask;
+    private LayerMask _overrideCollisionLayerMask;
+
 
     public static InputManager Instance { get; private set; }
 
@@ -31,6 +34,7 @@ public class InputManager : MonoBehaviour
         _collisionLayerMask = surfaceLayerMask;
         _lastPosition.Position = new Vector3(0,0,-5);
         _lastPosition.SurfaceNormal = new Vector3(0, 1, 0);
+        _overrideCollisionLayerMask = surfaceLayerMask+furnitureLayerMask;
 
         exitInput.action.performed += OnExitPreformed;
         primaryInput.action.performed += OnClickPreformed;
@@ -56,7 +60,7 @@ public class InputManager : MonoBehaviour
     {
         _collisionLayerMask ^= furnitureLayerMask;
     }
-    public bool IsPointingAtActiveFurnitureObject()
+    public bool IsPointerOnActiveFurnitureObject()
     {
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = mainCamera.nearClipPlane;
@@ -68,11 +72,15 @@ public class InputManager : MonoBehaviour
     }
     public (Vector3 Position, Vector3 SurfaceNormal) GetSelectedGridTilePosition()
     {
+        LayerMask mask = _collisionLayerMask;
+        if (useOverride)
+            mask=_overrideCollisionLayerMask;
+
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = mainCamera.nearClipPlane;
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100, _collisionLayerMask))
+        if (Physics.Raycast(ray, out hit, 100, mask))
         {
             _lastPosition.Position = hit.point;
             _lastPosition.SurfaceNormal = hit.normal;
@@ -81,15 +89,18 @@ public class InputManager : MonoBehaviour
     }
     private void OnExitPreformed(InputAction.CallbackContext context)
     {
-        OnExit?.Invoke();
+        if(context.action.IsPressed())
+            OnExit?.Invoke();
     }
     private void OnClickPreformed(InputAction.CallbackContext context)
     {
-        OnClick?.Invoke();
+        if (context.action.IsPressed())
+            OnClick?.Invoke();
     }
     private void OnRotatePreformed(InputAction.CallbackContext context)
     {
-        OnRotate?.Invoke();
+        if (context.action.IsPressed())
+            OnRotate?.Invoke();
     }
     private void OnDestroy()
     {

@@ -41,13 +41,19 @@ public class MoveState : IBuildingState
 
     public void OnAction(Vector3Int gridPos, Vector3 surfaceDirection)
     {
+        bool isPointerOverUI = InputManager.Instance.IsPointerOverUI();
+        if (isPointerOverUI)
+            return;
         if (!_isDragging)
         {
             _isDragging = SelectObject(gridPos, surfaceDirection);
+            InputManager.Instance.useOverride = !_isDragging;
+
         }
         else
         {
             _isDragging = !MoveObject(gridPos,surfaceDirection);
+            InputManager.Instance.useOverride = !_isDragging;
         }
     }
     public void UpdateState(Vector3Int gridPos, Vector3 surfaceDirection)
@@ -55,7 +61,7 @@ public class MoveState : IBuildingState
         _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
         if (!_isDragging)
         {
-            _previewSystem.UpdateIndicatorColor(IsPlacementValid());
+            _previewSystem.UpdateIndicatorColor(IsCursorOnObject());
             _placedObjectIndex = _furnitureData.GetIndex(gridPos, _previewSystem.GetDirectionToCellCenter() - 2 * surfaceDirection);
             
             _previewSystem.OutlineObject(_placedObjectIndex == -1 ? null : _objectManager.GetGameObjectByIndex(_placedObjectIndex));
@@ -88,6 +94,7 @@ public class MoveState : IBuildingState
         _objectManager.ChangeObjectLayerByIndex(_placedObjectIndex, LayerMask.NameToLayer("FurnitureInactive"));
         _previewSystem.OutlineObject(_objectManager.GetGameObjectByIndex(_placedObjectIndex));
         _furnitureColor = _objectManager.GetColorByIndex(_placedObjectIndex);
+
         return true;
     }
     private bool MoveObject(Vector3Int gridPos, Vector3 surfaceDirection)
@@ -115,9 +122,9 @@ public class MoveState : IBuildingState
         return true;
 
     }
-    private bool IsPlacementValid()
+    private bool IsCursorOnObject()
     {
-        return InputManager.Instance.IsPointingAtActiveFurnitureObject(); //replace with bool
+        return InputManager.Instance.IsPointerOnActiveFurnitureObject(); //replace with bool
     }
     private bool IsPlacementValid(Vector3Int gridPos, Vector3 surfaceDirection)
     {
