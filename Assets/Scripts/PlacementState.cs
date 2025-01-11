@@ -11,24 +11,24 @@ public class PlacementState : IBuildingState
     private PreviewSystem _previewSystem;
     private ObjectDatabaseSO _objectDatabase;
     private GridData _furnitureData;
-    private ObjectPlacer _objectPlacer;
-    private Color _furnitureColor;
-
-    public UnityEvent<Color> OnColorChanged = new UnityEvent<Color>();
+    private ObjectManager _objectManager;
+    private ColorWrapper _furnitureColor;
 
     public PlacementState(int id,
                           Grid grid,
                           PreviewSystem previewSystem,
                           ObjectDatabaseSO objectDatabase,
                           GridData furnitureData,
-                          ObjectPlacer objectPlacer)
+                          ObjectManager objectManager,
+                          ColorWrapper furnitureColor)
     {
         _id = id;
         _grid = grid;
         _previewSystem = previewSystem;
         _objectDatabase = objectDatabase;
         _furnitureData = furnitureData;
-        _objectPlacer = objectPlacer;
+        _objectManager = objectManager;
+        _furnitureColor=furnitureColor;
 
         _selectedObjectIndex = _objectDatabase.objectsData.FindIndex(x => x.Id == _id);
         if (_selectedObjectIndex < 0)
@@ -38,14 +38,14 @@ public class PlacementState : IBuildingState
             _objectDatabase.objectsData[_selectedObjectIndex].Prefab,
             _objectDatabase.objectsData[_selectedObjectIndex].Size);
 
-        InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
-        OnColorChanged.AddListener((color)  => _furnitureColor = color);
+        // Rotation doesn't work, needs debugging
+        //InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
     }
 
 
     public void EndState()
     {
-        _previewSystem.HidePlacementPreview();
+        _previewSystem.HidePreview();
     }
 
     public void OnAction(Vector3Int gridPos, Vector3 surfaceDirection)
@@ -54,8 +54,8 @@ public class PlacementState : IBuildingState
         bool isPointerOverUI = InputManager.Instance.IsPointerOverUI();
         if (!isPlacementValid || isPointerOverUI) return;
 
-
-        int index = _objectPlacer.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, _previewSystem.GetPreviewTransform(), _furnitureColor,_id);
+        Transform previewTransform = _previewSystem.GetPreviewTransform();
+        int index = _objectManager.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, previewTransform.position, previewTransform.rotation, _furnitureColor.color,_id);
 
         _furnitureData.AddObjectAt(gridPos,
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
@@ -80,17 +80,17 @@ public class PlacementState : IBuildingState
     }
     private bool IsPlacementValid(Vector3Int gridPos, Vector3 surfaceDirection)
     {
-
-        var surfaceNormals = _objectDatabase.objectsData[_selectedObjectIndex].PlacableSurfaceNormals;
-
-        if ((surfaceNormals.x < 1 || surfaceDirection.x < 1) &&
-            (surfaceNormals.y < 1 || surfaceDirection.y < 1) &&
-            (surfaceNormals.z < 1 || surfaceDirection.z < 1))
+        var placableAxis = _objectDatabase.objectsData[_selectedObjectIndex].PlacableSurfaceAxis;
+        var surfaceDirectionRounded = Vector3Int.RoundToInt(surfaceDirection);
+        if ((surfaceDirectionRounded.x == 0 || placableAxis.x == 0) &&
+            (surfaceDirectionRounded.y == 0 || placableAxis.y == 0) &&
+            (surfaceDirectionRounded.z == 0 || placableAxis.z == 0))
             return false;
 
         GridData selectedData = _furnitureData; //change for object on object
         return selectedData.CanPlaceObjectAt(gridPos,
                                              _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-                                             _previewSystem.GetDirectionToCellCenter());
+                                             _previewSystem.GetDirectionToCellCenter(),
+                                             new int[] { });
     }
 }

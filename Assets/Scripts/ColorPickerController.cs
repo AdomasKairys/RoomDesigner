@@ -17,7 +17,7 @@ public class ColorPickerController : MonoBehaviour
 
     public UnityEvent<Color> OnColorChange;
 
-    private void Start()
+    private void Awake()
     {
         CreateHueImage();
         CreateSVImage();

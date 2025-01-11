@@ -1,14 +1,22 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class InputManager : MonoBehaviour
 {
     [SerializeField] Camera mainCamera;
     [SerializeField] LayerMask surfaceLayerMask;
     [SerializeField] LayerMask furnitureLayerMask;
+    [SerializeField] InputActionReference exitInput;
+    [SerializeField] InputActionReference primaryInput;
+    [SerializeField] InputActionReference secondaryInput;
+
+
 
     private (Vector3 Position, Vector3 SurfaceNormal) _lastPosition;
+    private LayerMask _collisionLayerMask;
 
     public static InputManager Instance { get; private set; }
 
@@ -20,31 +28,43 @@ public class InputManager : MonoBehaviour
             Destroy(this.gameObject);
         else
             Instance = this;
-
+        _collisionLayerMask = surfaceLayerMask;
         _lastPosition.Position = new Vector3(0,0,-5);
         _lastPosition.SurfaceNormal = new Vector3(0, 1, 0);
+
+        exitInput.action.performed += OnExitPreformed;
+        primaryInput.action.performed += OnClickPreformed;
+        secondaryInput.action.performed += OnRotatePreformed;
     }
-    private void Update()
+
+    public bool IsPointerOverUI()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
-            OnExit?.Invoke();
-        if (Input.GetMouseButtonDown(0))
-            OnClick?.Invoke();
-        if(Input.GetMouseButtonDown(1))
-            OnRotate?.Invoke();
+        PointerEventData eventData = new(EventSystem.current)
+        {
+            position = Input.mousePosition
+        };
+
+        List<RaycastResult> results = new();
+
+        EventSystem.current.RaycastAll(eventData, results);
+
+        if (results.Count > 0)
+            return true;
+        return false;
     }
-    public bool IsPointerOverUI() => EventSystem.current.IsPointerOverGameObject();
-    public Vector3? GetSelectedFurnitureObjectPosition()
+    public void ToggleFurnitureLayerMaskInclusion()
+    {
+        _collisionLayerMask ^= furnitureLayerMask;
+    }
+    public bool IsPointingAtActiveFurnitureObject()
     {
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = mainCamera.nearClipPlane;
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
-        RaycastHit hit;
-        Vector3? furniture = null;
-        if (Physics.Raycast(ray, out hit, 100, furnitureLayerMask))
-            furniture = hit.transform.parent.position;
+        if (Physics.Raycast(ray, out _, 100, furnitureLayerMask))
+            return true;
 
-        return furniture;
+        return false;
     }
     public (Vector3 Position, Vector3 SurfaceNormal) GetSelectedGridTilePosition()
     {
@@ -52,11 +72,29 @@ public class InputManager : MonoBehaviour
         mousePos.z = mainCamera.nearClipPlane;
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100, surfaceLayerMask))
+        if (Physics.Raycast(ray, out hit, 100, _collisionLayerMask))
         {
             _lastPosition.Position = hit.point;
             _lastPosition.SurfaceNormal = hit.normal;
         }
         return _lastPosition;
+    }
+    private void OnExitPreformed(InputAction.CallbackContext context)
+    {
+        OnExit?.Invoke();
+    }
+    private void OnClickPreformed(InputAction.CallbackContext context)
+    {
+        OnClick?.Invoke();
+    }
+    private void OnRotatePreformed(InputAction.CallbackContext context)
+    {
+        OnRotate?.Invoke();
+    }
+    private void OnDestroy()
+    {
+        exitInput.action.performed -= OnExitPreformed;
+        primaryInput.action.performed -= OnClickPreformed;
+        secondaryInput.action.performed -= OnRotatePreformed;
     }
 }

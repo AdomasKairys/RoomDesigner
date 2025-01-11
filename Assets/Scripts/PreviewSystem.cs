@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class PreviewSystem : MonoBehaviour
     private Material _previewMaterialInstance;
     private GameObject _previewObject;
     private float _rotationDegrees = 0;
+    private GameObject _hoveredObject;
     private void Start()
     {
         cellIndicator.SetActive(false);
@@ -23,13 +25,13 @@ public class PreviewSystem : MonoBehaviour
         ScaleCursor(size);
         EnablePreview(_previewObject);
     }
-    public void ShowDeletePreview()
+    public void ShowSelectionCursor()
     {
         cellIndicator.SetActive(true);
         ScaleCursor(Vector3Int.one);
         UpdateIndicatorColor(false);
     }
-    public void HidePlacementPreview()
+    public void HidePreview()
     {
         cellIndicator.SetActive(false);
         if (_previewObject != null)
@@ -87,6 +89,22 @@ public class PreviewSystem : MonoBehaviour
         color.a = 0.5f;
         cellIndicator.GetComponentInChildren<Renderer>().material.color = color;
     }
+    public void OutlineObject(GameObject gameObject)
+    {
+        if (_hoveredObject != null &&
+            _hoveredObject != gameObject &&
+            _hoveredObject.TryGetComponent(out Outline outline))
+            outline.enabled = false;
+
+        _hoveredObject = gameObject;
+
+        if (_hoveredObject == null) return;
+
+        if (!_hoveredObject.TryGetComponent(out outline))
+            _hoveredObject.AddComponent<Outline>().OutlineWidth = 10;
+        else
+            outline.enabled = true;
+    }
     private void EnablePreview(GameObject previewObject)
     {
         Renderer[] renderers = previewObject.GetComponentsInChildren<Renderer>();
@@ -100,5 +118,4 @@ public class PreviewSystem : MonoBehaviour
             cellIndicator.transform.localScale = new Vector3(size.x, size.z, size.y);
     }
 
-    
 }

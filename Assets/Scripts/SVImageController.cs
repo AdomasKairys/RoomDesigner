@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Unity.VisualScripting.Dependencies.Sqlite;
 using UnityEditor.Build;
 using UnityEngine;
@@ -21,8 +22,10 @@ public class SVImageController : MonoBehaviour, IDragHandler, IPointerClickHandl
         _rectTransform = GetComponent<RectTransform>();
 
         _cursorTransform = cursorImage.GetComponent<RectTransform>();
-        _cursorTransform.localPosition = new Vector2(_rectTransform.sizeDelta.x * 0.5f, _rectTransform.sizeDelta.y * 0.5f);
-        cursorImage.color = Color.HSVToRGB(0, 0, 0);
+        _cursorTransform.localPosition = new Vector2(-_rectTransform.sizeDelta.x * 0.5f, -_rectTransform.sizeDelta.y * 0.5f);
+        cursorImage.color = Color.HSVToRGB(0, 0, 1);
+        _colorPickerController.SetSV(0, 0);
+        _colorPickerController.OnColorAccept();
     }
 
     public void UpdateColor(PointerEventData eventData)

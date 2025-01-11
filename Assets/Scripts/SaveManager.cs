@@ -52,7 +52,7 @@ public class SaveData
 public class SaveManager : MonoBehaviour
 {
     [SerializeField] PlacementStystem placementStystem;
-    [SerializeField] ObjectPlacer objectPlacer;
+    [SerializeField] ObjectManager objectManager;
     [SerializeField] ObjectDatabaseSO objectDatabaseSO;
     private string thumbnailFolder;
 
@@ -79,7 +79,7 @@ public class SaveManager : MonoBehaviour
         ScreenCapture.CaptureScreenshot(thumbnailPath);
         saveData.serializableGridData = new(placementStystem.GetFurnitureData());
         List<PlacedObjectData> pod = new();
-        foreach(var obj in objectPlacer.GetPlacedObjects())
+        foreach(var obj in objectManager.GetPlacedObjects())
         {
             if (obj.HasValue)
                 pod.Add(new(obj.Value.Item1, obj.Value.Item2, obj.Value.Item3));

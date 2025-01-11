@@ -1,22 +1,36 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LoadSaveUIController : MonoBehaviour
 {
     [SerializeField] RawImage thumbnailImage;
-    [SerializeField] Transform scrollViewContentListTransfor;
+    [SerializeField] Transform scrollViewContentListTransform;
     [SerializeField] GameObject saveDataItemPrefab;
 
     private Texture2D _thumbnailTexture;
-    public void LoadSaveFileList()
+    private List<GameObject> _saveItems = new();
+    private void OnEnable()
+    {
+        LoadSaveFileList();
+    }
+    private void OnDisable()
+    {
+        _saveItems.ForEach((s) => Destroy(s));
+    }
+    private void LoadSaveFileList()
     {
         thumbnailImage.gameObject.SetActive(false);
         var saveFileList = SaveManager.Instance.GetAllSaveFiles();
         foreach (var file in saveFileList) 
         {
-            var saveFileItem = Instantiate(saveDataItemPrefab,scrollViewContentListTransfor);
-            var itemController = saveFileItem.GetComponent<SaveListItemUIController>();
+            var saveFileItem = Instantiate(saveDataItemPrefab,scrollViewContentListTransform);
+            _saveItems.Add(saveFileItem);
+            if(!saveFileItem.TryGetComponent(out SaveListUIItemController itemController))
+            {
+                Debug.LogError("Save file prefab doesn't have a controller");
+                return;
+            }
             itemController.SetSaveFileData(file);
             itemController.OnHoveredEntered.AddListener(() =>
             {
@@ -44,6 +58,7 @@ public class LoadSaveUIController : MonoBehaviour
                 thumbnailImage.gameObject.SetActive(false);
                 SaveManager.Instance.DeleteSaveFile(file);
                 Destroy(saveFileItem);
+                _saveItems.Remove(saveFileItem);
             });
 
         }

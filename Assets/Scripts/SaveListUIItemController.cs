@@ -6,7 +6,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SaveListItemUIController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class SaveListUIItemController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] TextMeshProUGUI saveNameText;
     [SerializeField] TextMeshProUGUI saveDateText;
