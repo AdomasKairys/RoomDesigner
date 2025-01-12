@@ -19,6 +19,7 @@ MonoBehaviour:
     <ShapeOffsets>k__BackingField:
     - {x: 0, y: 0, z: 0}
     - {x: 1, y: 0, z: 0}
+    <PivotPoint>k__BackingField: {x: 0, y: 0, z: 0}
     <Prefab>k__BackingField: {fileID: 4765376641886257171, guid: c179507aa5b0d7f498dff83046a5a705, type: 3}
     <PlacableSurfaceAxis>k__BackingField: {x: 1, y: 0, z: 1}
   - <Name>k__BackingField: Small Cube
@@ -26,6 +27,7 @@ MonoBehaviour:
     <Size>k__BackingField: {x: 1, y: 1, z: 1}
     <ShapeOffsets>k__BackingField:
     - {x: 0, y: 0, z: 0}
+    <PivotPoint>k__BackingField: {x: 0, y: 0, z: 0}
     <Prefab>k__BackingField: {fileID: 8294556485075385952, guid: d00830b9bd7c2374e9ae0b79b3b144e7, type: 3}
     <PlacableSurfaceAxis>k__BackingField: {x: 1, y: 1, z: 1}
   - <Name>k__BackingField: Big Angled Cube
@@ -35,5 +37,15 @@ MonoBehaviour:
     - {x: 1, y: 0, z: 0}
     - {x: 1, y: 0, z: 1}
     - {x: 0, y: 0, z: 1}
+    <PivotPoint>k__BackingField: {x: 0.5, y: 0, z: 0.5}
     <Prefab>k__BackingField: {fileID: 4765376641886257171, guid: c7fbde735bc261a43872be8f7e12cd3a, type: 3}
+    <PlacableSurfaceAxis>k__BackingField: {x: 0, y: 1, z: 0}
+  - <Name>k__BackingField: Tall Cube
+    <Id>k__BackingField: 3
+    <Size>k__BackingField: {x: 1, y: 2, z: 0}
+    <ShapeOffsets>k__BackingField:
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 1, z: 0}
+    <PivotPoint>k__BackingField: {x: 0, y: 0, z: 0}
+    <Prefab>k__BackingField: {fileID: 4765376641886257171, guid: 2d02141ddb0df6445bca6dbbec1c6da2, type: 3}
     <PlacableSurfaceAxis>k__BackingField: {x: 0, y: 1, z: 0}

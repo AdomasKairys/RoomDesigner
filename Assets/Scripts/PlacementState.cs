@@ -38,8 +38,7 @@ public class PlacementState : IBuildingState
             _objectDatabase.objectsData[_selectedObjectIndex].Prefab,
             _objectDatabase.objectsData[_selectedObjectIndex].Size);
 
-        // Rotation doesn't work, needs debugging
-        //InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
+        InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
     }
 
 
@@ -55,11 +54,11 @@ public class PlacementState : IBuildingState
         if (!isPlacementValid || isPointerOverUI) return;
 
         Transform previewTransform = _previewSystem.GetPreviewTransform();
-        int index = _objectManager.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, previewTransform.position, previewTransform.rotation, _furnitureColor.color,_id);
+        Quaternion previewRotation = _previewSystem.GetPreviewBodyRotation();
+        int index = _objectManager.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, previewTransform.position, previewRotation, previewTransform.rotation, _furnitureColor.color,_id);
 
         _furnitureData.AddObjectAt(gridPos,
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-            _previewSystem.GetDirectionToCellCenter(),
             _objectDatabase.objectsData[_selectedObjectIndex].Id,
             index);
     }
@@ -69,17 +68,18 @@ public class PlacementState : IBuildingState
         _previewSystem.UpdateIndicatorPosition(_grid.CellToWorld(gridPos), surfaceDirection);
         _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets = _previewSystem.UpdatePreviewPositions(_grid.CellToWorld(gridPos),
                                                                                                                       surfaceDirection,
-                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets) ??
-                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets;
+                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].PivotPoint,
+                                                                                                                      _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets);
         _previewSystem.UpdatePreviewColor(isPlacementValid);
         _previewSystem.UpdateIndicatorColor(isPlacementValid);
     }
     private void RotateObject()
     {
-       _previewSystem.RotatePreview();
+        _previewSystem.RotatePreview();
     }
     private bool IsPlacementValid(Vector3Int gridPos, Vector3 surfaceDirection)
     {
+        // check if object can be placed on a surface (wall or ground)
         var placableAxis = _objectDatabase.objectsData[_selectedObjectIndex].PlacableSurfaceAxis;
         var surfaceDirectionRounded = Vector3Int.RoundToInt(surfaceDirection);
         if ((surfaceDirectionRounded.x == 0 || placableAxis.x == 0) &&
@@ -90,7 +90,6 @@ public class PlacementState : IBuildingState
         GridData selectedData = _furnitureData; //change for object on object
         return selectedData.CanPlaceObjectAt(gridPos,
                                              _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-                                             _previewSystem.GetDirectionToCellCenter(),
                                              new int[] { });
     }
 }

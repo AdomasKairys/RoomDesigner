@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 public class ObjectManager : MonoBehaviour
@@ -9,11 +8,20 @@ public class ObjectManager : MonoBehaviour
     private List<(GameObject, Color, int)?> _placedObjects = new();
 
     public IReadOnlyCollection<(GameObject, Color, int)?> GetPlacedObjects() => _placedObjects;
-    public int PlaceObject(GameObject prefab, Vector3 position, Quaternion rotation, Color color, int id)
+    public int PlaceObject(GameObject prefab, Vector3 position, Quaternion bodyBotation, Quaternion rotation, Color color, int id)
     {
         GameObject newObject = Instantiate(prefab);
+        var previewBody = newObject.transform.Find("Body");
+        if (previewBody == null)
+        {
+            Destroy(newObject);
+            Debug.LogError("Object doesn't have a Body child");
+            return -1;
+        }
         newObject.transform.position = position;
         newObject.transform.rotation = rotation;
+        previewBody.rotation = bodyBotation;
+
         newObject.layer = LayerMask.NameToLayer("Furniture");
         var children = newObject.GetComponentsInChildren<Transform>(true).Select(t => t.gameObject).ToList();
         children.ForEach(c => c.layer = newObject.layer);
@@ -38,7 +46,7 @@ public class ObjectManager : MonoBehaviour
         {
             int index = database.objectsData.FindIndex((x) => obj.Id == x.Id);
             GameObject gameObject = database.objectsData[index].Prefab;
-            PlaceObject(gameObject, obj.position, obj.rotation, obj.Color, obj.Id);
+            PlaceObject(gameObject, obj.position, obj.bodyRotation, obj.rotation, obj.Color, obj.Id);
         }
     }
     public void RemoveAllObjects()

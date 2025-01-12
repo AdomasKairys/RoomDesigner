@@ -8,11 +8,10 @@ public class GridData
     public Dictionary<Vector3Int, PlacementData> placedObjects = new();
     public void AddObjectAt(Vector3Int gridPos,
                             List<Vector3Int> shapeOffsets,
-                            Vector3 anchor,
                             int Id,
                             int placedObjectIndex)
     {
-        List<Vector3Int> occupiedPos = CalculatePositions(gridPos, shapeOffsets, anchor);
+        List<Vector3Int> occupiedPos = CalculatePositions(gridPos, shapeOffsets);
         PlacementData data = new PlacementData(occupiedPos, Id, placedObjectIndex);
         foreach (var pos in occupiedPos)
         {
@@ -21,34 +20,28 @@ public class GridData
             placedObjects[pos] = data;
         }
     }
-    public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor, int[] ignoreObjectsIndex)
+    public bool CanPlaceObjectAt(Vector3Int gridPos, List<Vector3Int> shapeOffsets, int[] ignoreObjectsIndex)
     {
-        List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets, anchor);
+        List<Vector3Int> posToOccupy = CalculatePositions(gridPos, shapeOffsets);
 
         return !posToOccupy.Any(pos => placedObjects.Where((p)=> !ignoreObjectsIndex.Contains(p.Value.placedObjectIndex)).ToDictionary((k)=>k.Key, (v)=>v.Value).ContainsKey(pos)) && !IsOutOfBounds(posToOccupy);
     }
-    public Vector3Int GridPositionRealativeToAnchor(Vector3Int gridPos, Vector3 anchor, float gridCellSize = 1f)
-    {
-        var newGridPos = gridPos + anchor * (gridCellSize / 2);
-        return Vector3Int.FloorToInt(newGridPos);
-    }
 
-    public int GetIndex(Vector3Int gridPos, Vector3 anchor)
+    public int GetIndex(Vector3Int gridPos, Vector3 direction)
     {
-        var placementData = GetPlacementDataAt(gridPos, anchor);
+        var placementData = GetPlacementDataAt(gridPos, direction);
         if(placementData == null) return -1;
         return placementData.placedObjectIndex;
     }
-    public int GetId(Vector3Int gridPos, Vector3 anchor)
+    public int GetId(Vector3Int gridPos, Vector3 direction)
     {
-        var placementData = GetPlacementDataAt(gridPos, anchor);
+        var placementData = GetPlacementDataAt(gridPos, direction);
         if (placementData == null) return -1;
         return placementData.id;
     }
-    public void RemoveObjectAt(Vector3Int gridPos, Vector3 anchor)
+    public void RemoveObjectAt(Vector3Int gridPos)
     {
-        var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
-        foreach (var pos in placedObjects[adjustedGridPos].occupiedPositions)
+        foreach (var pos in placedObjects[gridPos].occupiedPositions)
         {
             placedObjects.Remove(pos);
         }
@@ -61,22 +54,21 @@ public class GridData
             placedObjects.Remove(pos);
         }
     }
-    private PlacementData GetPlacementDataAt(Vector3Int gridPos, Vector3 anchor)
+    private PlacementData GetPlacementDataAt(Vector3Int gridPos, Vector3 direction)
     {
-        var adjustedGridPos = GridPositionRealativeToAnchor(gridPos, anchor);
+        var newGridPos = Vector3Int.FloorToInt(gridPos + direction * 0.5f);
 
-        if (!placedObjects.ContainsKey(adjustedGridPos))
+        if (!placedObjects.ContainsKey(newGridPos))
             return null;
 
-        return placedObjects[adjustedGridPos];
+        return placedObjects[newGridPos];
     }
-    private List<Vector3Int> CalculatePositions(Vector3Int gridPos, List<Vector3Int> shapeOffsets, Vector3 anchor)
+    private List<Vector3Int> CalculatePositions(Vector3Int gridPos, List<Vector3Int> shapeOffsets)
     {
         List<Vector3Int> returnVal = new();
         foreach (var offset in shapeOffsets)
         {
-            var adjustedGridPos = GridPositionRealativeToAnchor(gridPos + offset, anchor);
-            returnVal.Add(adjustedGridPos);
+            returnVal.Add(gridPos + offset);
         }
         return returnVal;
     }

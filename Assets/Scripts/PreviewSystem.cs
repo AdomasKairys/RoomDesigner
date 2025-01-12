@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,8 +9,8 @@ public class PreviewSystem : MonoBehaviour
 
     private Material _previewMaterialInstance;
     private GameObject _previewObject;
-    private float _rotationDegrees = 0;
     private GameObject _hoveredObject;
+    private float _currentRotation = 0f;
     private void Start()
     {
         cellIndicator.SetActive(false);
@@ -41,37 +40,42 @@ public class PreviewSystem : MonoBehaviour
     {
         cellIndicator.transform.position = pos;
         cellIndicator.transform.LookAt(cellIndicator.transform.position - surfaceDirection);
-        cellIndicator.transform.RotateAround(cellIndicator.transform.position, cellIndicator.transform.forward, _rotationDegrees);
     }
-    public List<Vector3Int> UpdatePreviewPositions(Vector3 pos, Vector3 surfaceDirection, List<Vector3Int> shapeOffsets)
+    public List<Vector3Int> UpdatePreviewPositions(Vector3 pos, Vector3 surfaceDirection, Vector3 pivot, List<Vector3Int> shapeOffsets)
     {
         _previewObject.transform.position = pos;
 
         if (_previewObject.transform.up != surfaceDirection)
         {
+
             _previewObject.transform.LookAt(_previewObject.transform.position + surfaceDirection);
             _previewObject.transform.RotateAround(_previewObject.transform.position, _previewObject.transform.right, 90);
             if (surfaceDirection != Vector3.up)
                 _previewObject.transform.RotateAround(_previewObject.transform.position, _previewObject.transform.up, 180);
         }
-        _previewObject.transform.RotateAround(_previewObject.transform.position, _previewObject.transform.up, _rotationDegrees);
-        _rotationDegrees = 0;
-        // move this to different script file
-        List<Vector3Int> rotatedOffsets = new();
-        for (int i = 0; i < shapeOffsets.Count; i++)
-        {
-            var rotatedOffset = _previewObject.transform.rotation * shapeOffsets[i];
-            rotatedOffsets.Add(Vector3Int.RoundToInt(rotatedOffset));
-        }
-        return rotatedOffsets;
+        RotatePreviewBody(_currentRotation);
+        Quaternion rotation = Quaternion.Euler(surfaceDirection * _currentRotation);
+        List<Vector3Int> rotatedOffsets = RotateOffsets(shapeOffsets, _previewObject.transform.localRotation, new(-0.5f, -0.5f, -0.5f));// default pivot point
+        return RotateOffsets(rotatedOffsets, rotation, pivot);
     }
-    public void RotatePreview()
+
+    public void RotatePreview(float degrees = 90f)
     {
-        _rotationDegrees = 90;
+        _currentRotation = (_currentRotation + degrees) % 360;
     }
     public Transform GetPreviewTransform() 
     { 
         return _previewObject.transform; 
+    }
+    public Quaternion GetPreviewBodyRotation()
+    {
+        var previewBody = _previewObject.transform.Find("Body");
+        if (previewBody == null)
+        {
+            Debug.LogError("Object doesn't have a Body child");
+            return new();
+        }
+        return previewBody.rotation;
     }
     public Vector3 GetDirectionToCellCenter()
     {
@@ -104,6 +108,27 @@ public class PreviewSystem : MonoBehaviour
             _hoveredObject.AddComponent<Outline>().OutlineWidth = 10;
         else
             outline.enabled = true;
+    }
+    private void RotatePreviewBody(float rotationDegrees)
+    {
+        var previewBody = _previewObject.transform.Find("Body");
+        if (previewBody == null)
+        {
+            Debug.LogError("Object doesn't have a Body child");
+            return;
+        }
+        previewBody.localRotation = Quaternion.Euler(0,rotationDegrees, 0);
+    }
+    private List<Vector3Int> RotateOffsets(List<Vector3Int> shapeOffsets, Quaternion rotation, Vector3 pivot)
+    {
+        List<Vector3Int> rotatedOffsets = new();
+        for (int i = 0; i < shapeOffsets.Count; i++)
+        {
+            var realetiveOffset = shapeOffsets[i] - pivot;
+            var rotatedOffset = rotation * realetiveOffset;
+            rotatedOffsets.Add(Vector3Int.RoundToInt(rotatedOffset + pivot));
+        }
+        return rotatedOffsets;
     }
     private void EnablePreview(GameObject previewObject)
     {

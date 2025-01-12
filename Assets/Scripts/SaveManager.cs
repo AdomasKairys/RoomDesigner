@@ -10,6 +10,7 @@ public class PlacedObjectData
 {
     public Vector3 position;
     public Quaternion rotation;
+    public Quaternion bodyRotation;
     public Color Color;
     public int Id;
 
@@ -19,6 +20,11 @@ public class PlacedObjectData
         rotation = go.transform.rotation;
         Color = color;
         Id = id;
+        bodyRotation = Quaternion.identity;
+        var previewBody = go.transform.Find("Body");
+        if (previewBody != null)
+            bodyRotation = previewBody.rotation;
+
     }
 }
 [System.Serializable]
@@ -54,7 +60,8 @@ public class SaveManager : MonoBehaviour
     [SerializeField] PlacementStystem placementStystem;
     [SerializeField] ObjectManager objectManager;
     [SerializeField] ObjectDatabaseSO objectDatabaseSO;
-    private string thumbnailFolder;
+    private string _thumbnailFolder;
+    private string _saveFolder;
 
     public static SaveManager Instance { get; private set; }
 
@@ -69,14 +76,17 @@ public class SaveManager : MonoBehaviour
         else
             Instance = this;
 
-        thumbnailFolder = Application.persistentDataPath + "/thumbnail";
-        Directory.CreateDirectory(thumbnailFolder);
+        _thumbnailFolder = Application.persistentDataPath + "/thumbnail";
+        _saveFolder = Application.persistentDataPath + "/saves";
+        Directory.CreateDirectory(_thumbnailFolder);
+        Directory.CreateDirectory(_saveFolder);
+
     }
     public void SetSaveFileName(string saveFileName) => _saveFileName = saveFileName;
     public void SaveFurniture()
     {
         SaveData saveData = new();
-        string thumbnailPath = thumbnailFolder + $"/Screenshot_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.png";
+        string thumbnailPath = _thumbnailFolder + $"/Screenshot_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.png";
         ScreenCapture.CaptureScreenshot(thumbnailPath);
         saveData.serializableGridData = new(placementStystem.GetFurnitureData());
         List<PlacedObjectData> pod = new();
@@ -88,19 +98,19 @@ public class SaveManager : MonoBehaviour
         saveData.placedObjectsData = pod;
 
 
-        string path = Application.persistentDataPath + $"/{_saveFileName}_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.json";
+        string path = _saveFolder + $"/{_saveFileName}_{DateTime.Now.ToString("dd-MM-yyyy-HH-mm-ss")}.json";
 
         string data = JsonUtility.ToJson(saveData);
         File.WriteAllText(path, data);
     }
     public List<string> GetAllSaveFiles()
     {
-        return Directory.EnumerateFiles(Application.persistentDataPath).Select((f)=>Path.GetFileName(f)).ToList();
+        return Directory.EnumerateFiles(_saveFolder).Select((f)=>Path.GetFileName(f)).ToList();
     }
     public byte[] GetThumbnailBytes(string fileName)
     {
         string date = Path.GetFileNameWithoutExtension(fileName).Split('_')[1];
-        string thumbnailPath = thumbnailFolder + $"/Screenshot_{date}.png";
+        string thumbnailPath = _thumbnailFolder + $"/Screenshot_{date}.png";
         if (!File.Exists(thumbnailPath))
             throw new Exception();
 
@@ -108,7 +118,7 @@ public class SaveManager : MonoBehaviour
     }
     public void DeleteSaveFile(string fileName)
     {
-        string filePath = Application.persistentDataPath + "/" + fileName;
+        string filePath = _saveFolder + "/" + fileName;
         if (!File.Exists(filePath))
         {
             Debug.LogError("Path not found in " + filePath);
@@ -132,7 +142,7 @@ public class SaveManager : MonoBehaviour
     private void DeleteThumbnail(string fileName)
     {
         string date = Path.GetFileNameWithoutExtension(fileName).Split('_')[1];
-        string thumbnailPath = thumbnailFolder + $"/Screenshot_{date}.png";
+        string thumbnailPath = _thumbnailFolder + $"/Screenshot_{date}.png";
         if (!File.Exists(thumbnailPath))
             return;
 

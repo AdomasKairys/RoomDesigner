@@ -1,4 +1,4 @@
-using UnityEditor.Rendering;
+
 using UnityEngine;
 
 public class MoveState : IBuildingState
@@ -27,9 +27,6 @@ public class MoveState : IBuildingState
         _objectDatabase = objectDatabase;
         _furnitureData = furnitureData;
         _objectManager = objectManager;
-
-        //InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
-        // Selected object to move
     }
     public void EndState()
     {
@@ -48,7 +45,6 @@ public class MoveState : IBuildingState
         {
             _isDragging = SelectObject(gridPos, surfaceDirection);
             InputManager.Instance.useOverride = !_isDragging;
-
         }
         else
         {
@@ -71,8 +67,8 @@ public class MoveState : IBuildingState
             bool isPlacementValid = IsPlacementValid(gridPos, surfaceDirection);
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets = _previewSystem.UpdatePreviewPositions(_grid.CellToWorld(gridPos),
                                                                                                                           surfaceDirection,
-                                                                                                                          _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets) ??
-                                                                                                                          _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets;
+                                                                                                                          _objectDatabase.objectsData[_selectedObjectIndex].PivotPoint,
+                                                                                                                          _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets);
             _previewSystem.UpdatePreviewColor(isPlacementValid);
             _previewSystem.UpdateIndicatorColor(isPlacementValid);
         }
@@ -94,7 +90,7 @@ public class MoveState : IBuildingState
         _objectManager.ChangeObjectLayerByIndex(_placedObjectIndex, LayerMask.NameToLayer("FurnitureInactive"));
         _previewSystem.OutlineObject(_objectManager.GetGameObjectByIndex(_placedObjectIndex));
         _furnitureColor = _objectManager.GetColorByIndex(_placedObjectIndex);
-
+        InputManager.Instance.OnRotate.AddListener(() => { RotateObject(); });
         return true;
     }
     private bool MoveObject(Vector3Int gridPos, Vector3 surfaceDirection)
@@ -111,16 +107,19 @@ public class MoveState : IBuildingState
         _objectManager.RemoveObjectAt(_placedObjectIndex);
 
         Transform previewTransform = _previewSystem.GetPreviewTransform();
-        int index = _objectManager.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, previewTransform.position, previewTransform.rotation, _furnitureColor, _id);
+        Quaternion previewBodyRotation = _previewSystem.GetPreviewBodyRotation();
+        int index = _objectManager.PlaceObject(_objectDatabase.objectsData[_selectedObjectIndex].Prefab, previewTransform.position, previewBodyRotation, previewTransform.rotation, _furnitureColor, _id);
 
         _furnitureData.AddObjectAt(gridPos,
             _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_placedObjectIndex].ShapeOffsets,
-            _previewSystem.GetDirectionToCellCenter(),
             _objectDatabase.objectsData[_selectedObjectIndex].Id,
             index);
-
+        InputManager.Instance.OnRotate.RemoveAllListeners();
         return true;
-
+    }
+    private void RotateObject()
+    {
+        _previewSystem.RotatePreview();
     }
     private bool IsCursorOnObject()
     {
@@ -138,7 +137,6 @@ public class MoveState : IBuildingState
         GridData selectedData = _furnitureData; //change for object on object
         return selectedData.CanPlaceObjectAt(gridPos,
                                              _objectDatabase.objectsData[_selectedObjectIndex].CurrentShapeOffsets ?? _objectDatabase.objectsData[_selectedObjectIndex].ShapeOffsets,
-                                             _previewSystem.GetDirectionToCellCenter(),
                                              new int[]{ _placedObjectIndex});
     }
 }

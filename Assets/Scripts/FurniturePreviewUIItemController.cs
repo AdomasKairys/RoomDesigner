@@ -1,6 +1,9 @@
 using System;
 using System.Collections;
+#if UNITY_EDITOR
 using UnityEditor;
+using System.IO;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,18 +16,36 @@ public class FurniturePreviewUIItemController : MonoBehaviour
         GetComponent<Button>().onClick.AddListener(()=> onClick());
         _previewImage = GetComponent<RawImage>();
         _furniturePrefab = prefab;
-        StartCoroutine(LoadPreview());
+        LoadPreview(prefab.name);
     }
-    private IEnumerator LoadPreview()
+#if UNITY_EDITOR
+    private void SavePreview(GameObject prefab)
     {
-        bool isPreviewLoaded = false;
-        Texture2D previewTexture = null;
-        while (!isPreviewLoaded || previewTexture == null)
+        string path = "Assets/Resources/Previews/";
+        if (!Directory.Exists(path))
+            Directory.CreateDirectory(path);
+
+        Texture2D preview = AssetPreview.GetAssetPreview(prefab);
+        while(preview == null)
+            preview = AssetPreview.GetAssetPreview(prefab);
+
+        if (preview != null)
         {
-            isPreviewLoaded = !AssetPreview.IsLoadingAssetPreview(_furniturePrefab.GetInstanceID());
-            previewTexture = AssetPreview.GetAssetPreview(_furniturePrefab);
-            yield return null;
+            byte[] bytes = preview.EncodeToPNG();
+            File.WriteAllBytes(Path.Combine(path, prefab.name + ".png"), bytes);
+            Debug.Log($"Saved preview for {prefab.name}");
         }
-        _previewImage.texture = previewTexture;
+        AssetDatabase.Refresh();
+    }
+#endif
+    private void LoadPreview(string objectName)
+    {
+        Texture2D previewTexture = Resources.Load<Texture2D>($"Previews/{objectName}");
+        if (previewTexture != null)
+        {
+            _previewImage.texture = previewTexture;
+        }
+        else
+            Debug.LogWarning($"Preview for {objectName} not found!");
     }
 }
