@@ -13,18 +13,19 @@ public class PlacedObjectData
     public Quaternion bodyRotation;
     public Color Color;
     public int Id;
+    public int placedObjectIndex;
 
-    public PlacedObjectData(GameObject go, Color color, int id)
+    public PlacedObjectData(GameObject go, Color color, int id, int index)
     {
         position = go.transform.position;
         rotation = go.transform.rotation;
         Color = color;
         Id = id;
+        placedObjectIndex = index;
         bodyRotation = Quaternion.identity;
         var previewBody = go.transform.Find("Body");
         if (previewBody != null)
             bodyRotation = previewBody.rotation;
-
     }
 }
 [System.Serializable]
@@ -90,10 +91,9 @@ public class SaveManager : MonoBehaviour
         ScreenCapture.CaptureScreenshot(thumbnailPath);
         saveData.serializableGridData = new(placementStystem.GetFurnitureData());
         List<PlacedObjectData> pod = new();
-        foreach(var obj in objectManager.GetPlacedObjects())
+        foreach(var (key, value) in objectManager.GetPlacedObjects())
         {
-            if (obj.HasValue)
-                pod.Add(new(obj.Value.Item1, obj.Value.Item2, obj.Value.Item3));
+             pod.Add(new(value.Item1, value.Item2, value.Item3, key));
         }
         saveData.placedObjectsData = pod;
 
@@ -129,7 +129,7 @@ public class SaveManager : MonoBehaviour
     }
     public void LoadFurniture(string fileName)
     {
-        string filePath = Application.persistentDataPath + "/" + fileName;
+        string filePath = _saveFolder + "/" + fileName;
         if (!File.Exists(filePath))
         {
             Debug.LogError("Path not found in " + filePath);
